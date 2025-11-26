@@ -12,6 +12,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public')); // Serves your frontend files
 
+// --- CONNECT TO MONGODB ---
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('Could not connect to MongoDB:', err));
+// --------------------------
+
 // --- Database Schemas ---
 const expenseSchema = new mongoose.Schema({
     payer: String,
