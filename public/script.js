@@ -1424,6 +1424,22 @@ const App = {
         //    This is critical for persistence.
         this.saveData();
         
+        // Bridge to backend: Send settlement to MongoDB
+        const payerName = this.data.users.find(u => u.id === payerId)?.name || 'Unknown';
+        const recipientName = this.data.users.find(u => u.id === recipientId)?.name || 'Unknown';
+
+        fetch(`${BASE_URL}/api/settlements`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                payer: payerName,
+                recipient: recipientName,
+                amount: amount,
+                method: method
+            })
+        }).catch(err => console.error("Cloud Sync Error:", err));
+        // =============================================
+
         // 3. Recalculate ALL balances.
         //    This tells the app to re-run the entire balance logic,
         //    which will now see the new settlement and calculate a new *net* balance.
