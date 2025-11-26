@@ -81,7 +81,8 @@ app.post('/api/calculate', (req, res) => {
 });
 
 // Serve the Frontend Entry Point
-app.get('*', (req, res) => {
+// CHANGED: Use /.*/ instead of '*' for Express v5 compatibility
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
