@@ -1132,8 +1132,7 @@ const App = {
             phone: '',
             address: '',
             bio: '',
-            avatar: `https://via.placeholder.com/80/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${name.charAt(0)}`
-        });
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`        });
         this.saveData();
         this.openModal('registrationSuccessModal');
         return true;
@@ -1486,8 +1485,7 @@ const App = {
                         id: newUserId,
                         name: pending.name,
                         email: pending.email,
-                        avatar: `https://via.placeholder.com/80/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${pending.name.charAt(0)}`
-                    };
+                        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(pending.name)}&background=random&color=fff`                    };
                     this.data.users.push(existingUser);
                 }
                 memberId = existingUser.id;
@@ -1611,8 +1609,7 @@ const App = {
             id: existingUser ? existingUser.id : `temp_${Date.now()}`,
             name: name,
             email: email,
-            avatar: existingUser ? existingUser.avatar : `https://via.placeholder.com/80/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${name.charAt(0)}`
-        };
+            avatar: existingUser ? existingUser.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`        };
 
         this.pendingGroupMembers.push(newMember);
 
