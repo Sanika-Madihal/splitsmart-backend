@@ -51,28 +51,54 @@ const App = {
     },
 
     loadData() {
+        // 1. Load Local Data first (for instant speed)
         try {
             const users = JSON.parse(localStorage.getItem('ss_users'));
             const groups = JSON.parse(localStorage.getItem('ss_groups'));
             const expenses = JSON.parse(localStorage.getItem('ss_expenses'));
-            // FIXED: Load settlements data from localStorage
             const settlements = JSON.parse(localStorage.getItem('ss_settlements'));
             const individualBalances = JSON.parse(localStorage.getItem('ss_individualBalances'));
 
             if (Array.isArray(users)) this.data.users = users;
             if (Array.isArray(groups)) this.data.groups = groups;
             if (Array.isArray(expenses)) this.data.expenses = expenses;
-            // FIXED: Assign loaded settlements
             if (Array.isArray(settlements)) this.data.settlements = settlements;
-            // We load this, but calculateDetailedBalances will overwrite it on init.
-            if (individualBalances && typeof individualBalances === 'object') this.individualBalances = individualBalances;
+            if (individualBalances) this.individualBalances = individualBalances;
 
             const savedId = localStorage.getItem('userId');
             if (savedId) this.savedUserId = parseInt(savedId);
-
         } catch (e) {
-            console.error("Error loading data from localStorage:", e);
+            console.error("Error loading local data:", e);
         }
+
+        // 2. NEW: Fetch Fresh Data from Cloud (The Source of Truth)
+        // This ensures that if you deleted something in MongoDB, it gets removed here too.
+        fetch(`${BASE_URL}/api/sync`)
+            .then(response => {
+                if (!response.ok) throw new Error("Server sync failed");
+                return response.json();
+            })
+            .then(cloudData => {
+                console.log("☁️ Synced with Cloud:", cloudData);
+                
+                // Overwrite local data with Cloud Data
+                this.data.users = cloudData.users || [];
+                this.data.groups = cloudData.groups || [];
+                // Frontend expects specific structure, backend might wrap expenses in trips
+                // But since we have a standalone 'expenses' collection now, we use that.
+                this.data.expenses = cloudData.expenses || []; 
+                this.data.settlements = cloudData.settlements || [];
+                
+                // Re-save to local storage so it persists
+                this.saveData();
+                
+                // Force a re-render to show the changes immediately
+                this.calculateDetailedBalances(); 
+                if (this.route === 'dashboard' || this.route === 'groups' || this.route === 'payment') {
+                    this.render();
+                }
+            })
+            .catch(err => console.warn("Could not reach cloud, using offline data:", err));
     },
 
     navigateTo(route, groupId = null) {

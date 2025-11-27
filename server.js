@@ -132,6 +132,29 @@ app.post('/api/reset', async (req, res) => {
     }
 });
 
+// --- NEW: Sync Route (Get ALL Data) ---
+app.get('/api/sync', async (req, res) => {
+    try {
+        // Fetch all data from MongoDB
+        const users = await User.find({});
+        const trips = await Trip.find({});
+        const expenses = await Expense.find({});
+        const settlements = await Settlement.find({});
+
+        // Send it to frontend
+        // Note: Mapping 'trips' to 'groups' to match frontend variable naming
+        res.status(200).json({ 
+            users, 
+            groups: trips, 
+            expenses, 
+            settlements 
+        });
+    } catch (error) {
+        console.error("Sync Error:", error);
+        res.status(500).json({ error: "Could not fetch data" });
+    }
+});
+
 // Dummy route for frontend calculation check
 app.post('/api/calculate', (req, res) => res.json({ transactions: [] }));
 
