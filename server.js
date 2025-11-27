@@ -115,6 +115,23 @@ app.post('/api/settlements', async (req, res) => {
     }
 });
 
+// --- NEW: Reset/Clear Entire Database ---
+app.post('/api/reset', async (req, res) => {
+    try {
+        // Delete everything from all collections
+        await Trip.deleteMany({});
+        await User.deleteMany({});
+        await Expense.deleteMany({});
+        await Settlement.deleteMany({});
+        
+        console.log("⚠️ Database fully reset by user request");
+        res.status(200).json({ message: "Database cleared successfully" });
+    } catch (error) {
+        console.error("Reset Error:", error);
+        res.status(500).json({ error: "Could not reset database" });
+    }
+});
+
 // Dummy route for frontend calculation check
 app.post('/api/calculate', (req, res) => res.json({ transactions: [] }));
 

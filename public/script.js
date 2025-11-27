@@ -1320,19 +1320,36 @@ const App = {
     },
 
     // FIXED: Reset data with custom modal
+    // FIXED: Reset data now clears both LocalStorage AND Cloud MongoDB
     resetData() {
         this.showConfirmationModal(
             "Reset All Data",
-            "This will permanently delete ALL data (users, groups, expenses, settlements) and log you out. This action cannot be undone.",
+            "This will permanently delete ALL data (users, groups, expenses, settlements) from both your browser AND the cloud database. This action cannot be undone.",
             () => {
-                localStorage.clear();
-                this.data.users = [];
-                this.data.groups = [];
-                this.data.expenses = [];
-                // FIXED: Clear settlements data on reset
-                this.data.settlements = [];
-                this.individualBalances = {};
-                window.location.reload();
+                // 1. Call the backend to wipe the database
+                fetch(`${BASE_URL}/api/reset`, { method: 'POST' })
+                    .then(response => {
+                        if (response.ok) {
+                            // 2. If backend success, clear Local Storage
+                            localStorage.clear();
+                            this.data.users = [];
+                            this.data.groups = [];
+                            this.data.expenses = [];
+                            this.data.settlements = [];
+                            this.individualBalances = {};
+                            
+                            this.showToast('All data reset successfully.', 'success');
+                            
+                            // 3. Reload page to start fresh
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            this.showToast('Failed to reset cloud database.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Reset Error:", err);
+                        this.showToast('Network error. Could not reach server.', 'error');
+                    });
             }
         );
     },
